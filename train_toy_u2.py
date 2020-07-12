@@ -1,7 +1,6 @@
 import os
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-#os.environ["CUDA_VISIBLE_DEVICES"]="1"
-os.environ["CUDA_VISIBLE_DEVICES"]="0,1"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 #import os
 import time
@@ -76,16 +75,32 @@ parser.add_argument('--n-samples', type=int, default=1)
 parser.add_argument('--n-dist', choices=['geometric', 'poisson'], default='geometric')
 
 parser.add_argument('--niters', type=int, default=5000)
-parser.add_argument('--niters2', type=int, default=10001)
+#parser.add_argument('--niters2', type=int, default=1501)
+
+#parser.add_argument('--niters2', type=int, default=1501)
+#parser.add_argument('--niters2', type=int, default=5501)
+
+#parser.add_argument('--niters2', type=int, default=1501)
+parser.add_argument('--niters2', type=int, default=50001)
+
+#parser.add_argument('--niters2', type=int, default=1501)
+#parser.add_argument('--niters2', type=int, default=1501)
 
 #parser.add_argument('--lr', type=float, default=1e-1)
-parser.add_argument('--lr', type=float, default=5e-2)
+
+#parser.add_argument('--lr', type=float, default=1e-1)
+parser.add_argument('--lr', type=float, default=1e-4)
+
+#parser.add_argument('--lr', type=float, default=1e-1)
+#parser.add_argument('--lr', type=float, default=1e-1)
 
 #parser.add_argument('--batch_size', type=int, default=500)
-parser.add_argument('--test_batch_size', type=int, default=100)
+parser.add_argument('--test_batch_size', type=int, default=500)
 
 #parser.add_argument('--batch_size', type=int, default=500)
-parser.add_argument('--batch_size', type=int, default=500)
+
+#parser.add_argument('--batch_size', type=int, default=500)
+parser.add_argument('--batch_size', type=int, default=256)
 
 parser.add_argument('--weight-decay', type=float, default=1e-5)
 parser.add_argument('--annealing-iters', type=int, default=0)
@@ -163,10 +178,10 @@ def compute_loss2(x, args, model, batch_size=None, beta=1.):
    #z, delta_logp = model(x, zero)
 
    #z, delta_logp = model(x, zero)
-   #z, delta_logp = x, zero
+   z, delta_logp = x, zero
 
    #z, delta_logp = model(x, zero)
-   z, delta_logp = model(x, zero)
+   #z, delta_logp = model(x, zero)
 
    # x is a Tensor => batch_size x 2
    # x is the same as args.data => batch_size x 2
@@ -204,7 +219,6 @@ class Generator(nn.Module):
        x = self.lin3(x2)
        return x
 
-# Larger GAN Model
 class Generator2(nn.Module):
     def __init__(self, nhidden):
         super(Generator2, self).__init__()
@@ -685,11 +699,8 @@ def loss_fn2(genFGen2, args, model):
     #return first_term_loss + second_term_loss2 + third_term_loss
     #return first_term_loss + second_term_loss2 + third_term_loss12
 
-    #return first_term_loss + second_term_loss2
+    return first_term_loss + second_term_loss2
     #return first_term_loss + second_term_loss2 + third_term_loss12
-
-    #return first_term_loss + second_term_loss2 + third_term_loss12
-    return first_term_loss + second_term_loss2 + third_term_loss12, xData
 
 def use_loss_fn2(genFGen2, args, model):
     """
@@ -846,14 +857,9 @@ def use_loss_fn2(genFGen2, args, model):
     return first_term_loss + second_term_loss + third_term_loss
     """
 
-    #first_term_loss = compute_loss2(genFGen2, args, model)
+    first_term_loss = compute_loss2(genFGen2, args, model)
     #first_term_loss2 = compute_loss2(genFGen2, args, model)
     #first_term_loss = torch.log(first_term_loss2 / (1.0 - first_term_loss2))
-
-    #first_term_loss = compute_loss2(genFGen2, args, model)
-
-    #first_term_loss = compute_loss2(genFGen2, args, model)
-    #first_term_loss = compute_loss2(genFGen2, args, model)
 
     #print('')
     #print(first_term_loss)
@@ -861,37 +867,16 @@ def use_loss_fn2(genFGen2, args, model):
     #mu = torch.from_numpy(np.array([2.805741, -0.00889241], dtype="float32")).to(device)
     #S = torch.from_numpy(np.array([[pow(0.3442525,2), 0.0], [0.0, pow(0.35358343,2)]], dtype="float32")).to(device)
 
-    mu = torch.from_numpy(np.array([2.8093171, 1.2994107e-03], dtype="float32")).to(device)
-    S = torch.from_numpy(np.array([[pow(0.35840544, 2), 0.0], [0.0, pow(0.34766033, 2)]], dtype="float32")).to(device)
-
-    mu2 = torch.from_numpy(np.array([-2.8093171, 1.2994107e-03], dtype="float32")).to(device)
-
     #mu = torch.from_numpy(np.array([0.0, 0.0], dtype="float32")).to(device)
     #S = torch.from_numpy(np.array([[pow(1.0,2), 0.0], [0.0, pow(1.0,2)]], dtype="float32")).to(device)
 
     #storeAll = torch.from_numpy(np.array(0.0, dtype="float32")).to(device)
-    storeAll = torch.empty(args.batch_size, device=device, requires_grad=False)
-    toUse_storeAll = torch.distributions.MultivariateNormal(loc=mu, covariance_matrix=S)
-    toUse_storeAll2 = torch.distributions.MultivariateNormal(loc=mu2, covariance_matrix=S)
-    for loopIndex_i in range(args.batch_size):
-        #storeAll += torch.exp(toUse_storeAll.log_prob(genFGen2[loopIndex_i:1 + loopIndex_i, :].squeeze(0)))
-        #storeAll[loopIndex_i] = torch.exp(toUse_storeAll.log_prob(genFGen2[loopIndex_i:1 + loopIndex_i, :].squeeze(0)).requires_grad_())
-
-        #storeAll[loopIndex_i] = torch.exp(toUse_storeAll.log_prob(genFGen2[loopIndex_i:1 + loopIndex_i, :].squeeze(0)).requires_grad_())
-        storeAll[loopIndex_i] = 0.5 * torch.exp(toUse_storeAll.log_prob(genFGen2[loopIndex_i:1 + loopIndex_i, :].squeeze(0)).requires_grad_())\
-                                + 0.5 * torch.exp(toUse_storeAll2.log_prob(genFGen2[loopIndex_i:1 + loopIndex_i, :].squeeze(0)).requires_grad_())
+    #toUse_storeAll = torch.distributions.MultivariateNormal(loc=mu, covariance_matrix=S)
+    #for loopIndex_i in range(genFGen2.size()[0]):
+    #    storeAll += torch.exp(toUse_storeAll.log_prob(genFGen2[loopIndex_i:1 + loopIndex_i, :].squeeze(0)))
     #storeAll /= genFGen2.size()[0]
-    first_term_loss = torch.mean(storeAll)
 
-    """
-    second_term_loss32 = torch.empty(args.batch_size, device=device, requires_grad=False)
-    for i in range(args.batch_size):
-        second_term_loss22 = torch.norm(genFGen2[i, :] - xData, p=None, dim=1).requires_grad_() ** 2
-        second_term_loss32[i] = torch.min(second_term_loss22)
-    second_term_loss2 = torch.mean(second_term_loss32)
-    """
-
-    #print(first_term_loss)
+    #print(storeAll)
     #print('')
 
     #print('')
@@ -983,9 +968,9 @@ def use_loss_fn2(genFGen2, args, model):
     print('')
     """
 
-    #args.batch_size = 2
-    #genFGen2 = torch.from_numpy(np.array([[3, 0], [2, 0]], dtype="float32")).to(device)
-    #xData = torch.from_numpy(np.array([[1, 0], [0, 1]], dtype="float32")).to(device)
+    args.batch_size = 2
+    genFGen2 = torch.from_numpy(np.array([[3, 0], [2, 0]], dtype="float32")).to(device)
+    xData = torch.from_numpy(np.array([[1, 0], [0, 1]], dtype="float32")).to(device)
 
     second_term_loss32 = torch.empty(args.batch_size, device=device, requires_grad=False)
     for i in range(args.batch_size):
@@ -1001,42 +986,17 @@ def use_loss_fn2(genFGen2, args, model):
     #second_term_loss22 = torch.min(second_term_loss32)
     #print(second_term_loss22)
     #print(second_term_loss22.shape)
-    #second_term_loss2 = torch.mean(second_term_loss32)
-    second_term_loss2 = 0.1 * torch.mean(second_term_loss32)
+    second_term_loss2 = torch.mean(second_term_loss32)
     #second_term_loss2 = 7.62939453125 * torch.mean(second_term_loss32)
     #print(second_term_loss2)
     #print(second_term_loss2.shape)
 
-    genFGen3 = torch.randn([args.batch_size, 2], device=device, requires_grad=True)
-    third_term_loss32 = torch.empty(args.batch_size, device=device, requires_grad=False)
-    for i in range(args.batch_size):
-        # third_term_loss22 = (torch.norm(genFGen3[i, :] - genFGen3, p='fro', dim=1).requires_grad_()) / (1.0e-32+torch.norm(genFGen2[i, :] - genFGen2, p='fro', dim=1).requires_grad_())
-        # third_term_loss22 = (torch.norm(genFGen3[i, :] - genFGen3, p=None, dim=1).requires_grad_()) / (1.0e-32+torch.norm(genFGen2[i, :] - genFGen2, p=None, dim=1).requires_grad_())
-        third_term_loss22 = (torch.norm(genFGen3[i, :] - genFGen3, p=None, dim=1).requires_grad_()**2) / (
-                    1.0e-17 + torch.norm(genFGen2[i, :] - genFGen2, p=None, dim=1).requires_grad_()**2)
-        # print(third_term_loss22.shape)
-        third_term_loss32[i] = torch.mean(third_term_loss22)
-    # print(third_term_loss32)
-    # print(third_term_loss32.shape)
-    # print(third_term_loss22)
-    # print(third_term_loss22.shape)
-    #third_term_loss12 = torch.mean(third_term_loss32)
-    third_term_loss12 = 0.1 * torch.mean(third_term_loss32)
-    # print(third_term_loss2)
-    # print(third_term_loss12.shape)
+    print('')
+    print(first_term_loss)
+    print(second_term_loss2)
 
-    #print('')
-    #print(first_term_loss)
-    #print(second_term_loss2)
-
-    #print('')
-    #return first_term_loss + second_term_loss2
-
-    #return first_term_loss + second_term_loss2
-    #return first_term_loss + second_term_loss2, xData
-
-    #return first_term_loss + second_term_loss2, xData
-    return first_term_loss + second_term_loss2 + third_term_loss12, xData
+    print('')
+    return first_term_loss + second_term_loss2
 
 def parse_vnorms():
     ps = []
@@ -1162,7 +1122,7 @@ if __name__ == '__main__':
     #logger.info(model)
     logger.info("Number of trainable parameters: {}".format(count_parameters(model)))
 
-    hiddenLayers = 8
+    hiddenLayers = 16
     genGen = Generator(hiddenLayers).to(device)
 
     #genGen = Generator(hiddenLayers).to(device)
@@ -1301,12 +1261,12 @@ if __name__ == '__main__':
     #adsfgdsgsdfdsa
 
     #checkpoint = torch.load(os.path.join(os.path.join(args.save, 'models'), 'checkpt-%04d.pth' % args.niters))
-    #checkpoint = torch.load(os.path.join(os.path.join(args.save, 'models'), 'checkpt-%04d.pth' % args.niters), map_location = torch.device('cpu'))
+    checkpoint = torch.load(os.path.join(os.path.join(args.save, 'models'), 'checkpt-%04d.pth' % args.niters), map_location = torch.device('cpu'))
 
     #checkpoint = torch.load(os.path.join(os.path.join(args.save, 'models'), 'checkpt-%04d.pth' % args.niters))
 
     #checkpoint = torch.load(os.path.join(os.path.join(args.save, 'models'), 'checkpt-%04d.pth' % args.niters))
-    checkpoint = torch.load(os.path.join(os.path.join(args.save, 'models'), 'checkpt-%04d.pth' % args.niters))
+    #checkpoint = torch.load(os.path.join(os.path.join(args.save, 'models'), 'checkpt-%04d.pth' % args.niters))
 
     model.load_state_dict(checkpoint['state_dict'])
     model.to(device)
@@ -1323,24 +1283,12 @@ if __name__ == '__main__':
     #optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     #optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-    #utils.save_checkpoint({'state_dict': genGen.module.state_dict(), 'optimizer_state_dict': optimizerGen.state_dict()},
-    #                      os.path.join(args.save, 'moodeels4'), args.niters2)
-
-    checkpoint2 = torch.load(os.path.join(os.path.join(args.save, 'moodeels4'), 'checkpt-%04d.pth' % args.niters2))
-
-    genGen.load_state_dict(checkpoint2['state_dict'])
-    optimizerGen.load_state_dict(checkpoint2['optimizer_state_dict'])
-
     time2_meter = utils.RunningAverageMeter(0.93)
     loss2_meter = utils.RunningAverageMeter(0.93)
 
     end = time.time()
     best_loss = float('inf')
 
-    #genGen.train()
-
-    genGen = nn.DataParallel(genGen)
-    genGen.to(device)
     genGen.train()
 
     for itr in range(1, args.niters2 + 1):
@@ -1382,16 +1330,46 @@ if __name__ == '__main__':
         #lossGen = loss_fn2(genFGen2, args, model)
 
         #lossGen = loss_fn2(genFGen2, args, model)
-        #lossGen = use_loss_fn2(genFGen2, args, model)
-
-        #lossGen = use_loss_fn2(genFGen2, args, model)
-        lossGen, xData = use_loss_fn2(genFGen2, args, model)
+        lossGen = use_loss_fn2(genFGen2, args, model)
 
         #lossGen = loss_fn2(genFGen2, args, model)
         #lossGen = loss_fn2(genFGen2, args, model)
 
-        #xData = toy_data.inf_train_gen(args.data, batch_size=args.batch_size)
-        #xData = torch.from_numpy(xData).type(torch.float32).to(device)
+        xData = toy_data.inf_train_gen(args.data, batch_size=args.batch_size)
+        xData = torch.from_numpy(xData).type(torch.float32).to(device)
+
+        #if (itr-1) % 300 == 0:
+        if (itr-1) % 500 == 0:
+            plt.figure()
+
+            plt.plot(xData[:, 0].cpu().squeeze().numpy(), xData[:, 1].cpu().squeeze().numpy(), '+r')
+            plt.plot(genFGen2[:, 0].cpu().detach().numpy(), genFGen2[:, 1].cpu().detach().numpy(), 'ob')
+
+            #plt.grid()
+            #plt.xlim(-1.0, 4.5)
+            #plt.ylim(-1.5, 1.5)
+
+            plt.grid()
+            plt.xlim(-4.5, 4.5)
+            plt.ylim(-4.5, 4.5)
+
+            fig_filename = os.path.join(args.save, 'figs2', 'ffii{:04d}.jpg'.format(itr))
+            print('')
+
+            print(fig_filename)
+            print('')
+
+            utils.makedirs(os.path.dirname(fig_filename))
+            plt.savefig(fig_filename)
+
+            #plt.ion()
+            #plt.show()
+
+            #plt.pause(0.1)
+            plt.close()
+
+            utils.save_checkpoint({'state_dict': genGen.state_dict()}, os.path.join(args.save, 'myModels2'), itr)
+            #utils.save_checkpoint({'state_dict': genGen.state_dict()}, os.path.join(args.save, 'myModels'), args.niters2)
 
         #loss_meter.update(loss.item())
         #logpz_meter.update(logpz.item())
@@ -1427,71 +1405,10 @@ if __name__ == '__main__':
         #logger.info('Iter {:04d} | Time {:.4f}({:.4f}) | Loss {:.6f}({:.6f})'.format(
         #        itr, time2_meter.val, time2_meter.avg, loss2_meter.val, loss2_meter.avg))
 
-        #if (itr-1) % 250 == 0:
-        #    logger.info('Iter {:04d} | Time {:.4f}({:.4f}) | Loss {:.6f}({:.6f})'.format(
-        #        itr, time2_meter.val, time2_meter.avg, loss2_meter.val, loss2_meter.avg))
-
-        if (itr-1) % 500 == 0:
-            with torch.no_grad():
-                genGen.eval()
-                plt.figure()
-
-                plt.plot(xData[:, 0].cpu().squeeze().numpy(), xData[:, 1].cpu().squeeze().numpy(), '+r')
-                plt.plot(genFGen2[:, 0].cpu().detach().numpy(), genFGen2[:, 1].cpu().detach().numpy(), 'ob')
-
-                #plt.grid()
-                plt.xlim(-4.5, 4.5)
-                plt.ylim(-4.5, 4.5)
-
-                #plt.legend(['Real points', 'Generated points', '1000 epochs, l1 = 10, l2 = 0.1, lr = 0.01'])
-                plt.legend(['Real points', 'Generated points'])
-
-                # 5000 epochs, l1 = 0.3, l2 = 0.025, lr = 1e-5,
-                # B(z) = MA, G(z) = CFS, x ~ N(1), std = 0.35
-
-                plt.text(4.3, -4.5 + 0.2, 'B(z) = MA, G(z) = CFS, x ~ N(2), x std = 0.35',
-                         verticalalignment='bottom', horizontalalignment='right', fontsize=10.5)
-
-                plt.text(4.3, -4.0 + 0.2, '{} epochs, l1 = 0.1, l2 = 0.05, lr = {}'.format(itr-1, args.lr),
-                         verticalalignment='bottom', horizontalalignment='right', fontsize=10.5)
-
-                #plt.show()
-                #plt.pause(0.1)
-
-                fig_filename = os.path.join(args.save, 'ffiigs3', 'ffii{:04d}.jpg'.format(itr))
-                print('')
-
-                print(fig_filename)
-                print('')
-
-                utils.makedirs(os.path.dirname(fig_filename))
-                plt.savefig(fig_filename)
-
-                #plt.ion()
-                #plt.show()
-
-                #plt.pause(0.1)
-                plt.close()
-
-                #utils.save_checkpoint({'state_dict': genGen.state_dict()}, os.path.join(args.save, 'myModels2'), itr)
-                #utils.save_checkpoint({'state_dict': genGen.state_dict()}, os.path.join(args.save, 'myModels'), args.niters2)
-
-                # utils.save_checkpoint({'state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict(),
-                #                       'args': args}, os.path.join(args.save, 'models'), args.niters)
-
-                #utils.save_checkpoint({'state_dict': genGen.state_dict(), 'optimizer_state_dict': optimizerGen.state_dict(), 'args': args},
-                #    os.path.join(args.save, 'myModelss0'), args.niters2)
-
-                #utils.save_checkpoint({'state_dict': genGen.state_dict(), 'optimizer_state_dict': optimizerGen.state_dict()},
-                #    os.path.join(args.save, 'moodels4'), args.niters2)
-
-                utils.save_checkpoint({'state_dict': genGen.module.state_dict(), 'optimizer_state_dict': optimizerGen.state_dict()},
-                    os.path.join(args.save, 'moodeels4'), args.niters2)
-
-                logger.info('Iter {:04d} | Time {:.4f}({:.4f}) | Loss {:.6f}({:.6f})'.format(
-                    itr, time2_meter.val, time2_meter.avg, loss2_meter.val, loss2_meter.avg))
-
-                genGen.train()
+        #if (itr-1) % 100 == 0:
+        if (itr-1) % 250 == 0:
+            logger.info('Iter {:04d} | Time {:.4f}({:.4f}) | Loss {:.6f}({:.6f})'.format(
+                itr, time2_meter.val, time2_meter.avg, loss2_meter.val, loss2_meter.avg))
 
         #if itr % args.val_freq == 0 or itr == args.niters:
         #    update_lipschitz(model, 200)
